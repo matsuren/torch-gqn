@@ -124,7 +124,6 @@ if __name__ == "__main__":
 
     import sys
     from os.path import join
-    from multiprocessing import Pool
     from tqdm import tqdm
 
     # from tqdm.notebook import tqdm
@@ -140,8 +139,6 @@ if __name__ == "__main__":
     root_path = sys.argv[2]
     dataset_info = _DATASETS[DATASET]
     batch_size = 1024
-    # Prepare thread pool
-    pool = Pool(32)
 
     torch_dataset_path = join(root_path, DATASET + "-torch")
     torch_dataset_path_train = join(torch_dataset_path, "train")
@@ -163,14 +160,7 @@ if __name__ == "__main__":
         pbar.set_description(f"Loading..Total:{tot} ")
         for i, (frame, cam) in enumerate(pbar):
             path = os.path.join(torch_dataset_path_train, f"{tot + i}.pt.gz")
-            pool.apply_async(
-                write_data,
-                args=(
-                    path,
-                    frame,
-                    cam,
-                ),
-            )
+            write_data(path, frame, cam)
         tot += i
     print(f" [-] {tot} scenes in the train dataset")
 
@@ -184,15 +174,6 @@ if __name__ == "__main__":
         pbar.set_description(f"Loading..Total:{tot} ")
         for i, (frame, cam) in enumerate(pbar):
             path = os.path.join(torch_dataset_path_test, f"{tot + i}.pt.gz")
-            pool.apply_async(
-                write_data,
-                args=(
-                    path,
-                    frame,
-                    cam,
-                ),
-            )
+            write_data(path, frame, cam)
         tot += i
-    pool.close()
-    pool.join()
     print(f" [-] {tot} scenes in the test dataset")
